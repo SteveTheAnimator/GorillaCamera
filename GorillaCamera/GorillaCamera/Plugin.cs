@@ -10,7 +10,7 @@ using static GorillaCamera.Scripts.Utils.V3Utils; // Vector 3 Utils, all made by
 using static GorillaCamera.Scripts.Utils.RigUtils;
 using static GorillaCamera.Scripts.Utils.GameModeUtils;
 using Photon.Pun;
-using System.Linq; // Rig Utils, all made by me!
+using System.Linq;
 
 namespace GorillaCamera
 {
@@ -278,6 +278,11 @@ namespace GorillaCamera
                     RandomRigTimeChangeDelay = GUI.HorizontalSlider(new Rect(panelRect.x + 10, panelRect.y + panelHeight - 10, panelWidth - 20, 20), RandomRigTimeChangeDelay, 1f, 20f);
                 }
             }
+        }
+
+        private string ConvertCameraModeEnumToNormalText(CameraModes currentCameraMode)
+        {
+            throw new NotImplementedException();
         }
 
         private void SwitchCameraMode(int direction)
