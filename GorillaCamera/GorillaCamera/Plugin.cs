@@ -280,11 +280,6 @@ namespace GorillaCamera
             }
         }
 
-        private string ConvertCameraModeEnumToNormalText(CameraModes currentCameraMode)
-        {
-            throw new NotImplementedException();
-        }
-
         private void SwitchCameraMode(int direction)
         {
             CameraModes[] modes = (CameraModes[])Enum.GetValues(typeof(CameraModes));
