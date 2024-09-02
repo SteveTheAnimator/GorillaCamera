@@ -18,19 +18,31 @@ namespace GorillaCamera
     [BepInPlugin(PluginInfo.GUID, PluginInfo.Name, PluginInfo.Version)]
     public class Plugin : BaseUnityPlugin
     {
+        // References
         public GameObject ShoulderCamera;
         public Camera ActualCamera;
-        public float SmoothAmount = 0.1f;
         public CinemachineBrain CameraBrain;
-        public CameraModes CurrentCameraMode = CameraModes.ThirdPerson;
         public GameObject LocalPlayerObject;
         public GameObject LocalPlayerCameraObject;
+        public VRRig FollowingRig;
+
+        // Values
+        public float SmoothAmount = 0.1f;
+        public CameraModes CurrentCameraMode = CameraModes.ThirdPerson;
         public bool isGUIEnabled = false;
         public float RandomRigTime = 0f;
-        public VRRig FollowingRig;
         public float RandomRigTimeChangeDelay = 7f;
         public bool TweenFirstPerson = false;
         public float RotationTime = 0.1f;
+
+        // Competitive
+        public bool isCompetitiveTeam = false;
+        public bool isCompetitiveTeamConfiguring = false;
+        public string Team1Name = "Team 1";
+        public string Team2Name = "Team 2";
+        public int Team1Score = 0;
+        public int Team2Score = 0;
+        public bool isChangingTeam1Score = true;
 
         public void Start()
         {
@@ -177,59 +189,105 @@ namespace GorillaCamera
             {
                 isGUIEnabled = !isGUIEnabled;
             }
+            if(Keyboard.current.leftBracketKey.wasPressedThisFrame) 
+            { 
+                if(isGUIEnabled)
+                {
+                    isCompetitiveTeam = !isCompetitiveTeam;
+                }
+            }
+            if (Keyboard.current.semicolonKey.wasPressedThisFrame)
+            {
+                if (isGUIEnabled)
+                {
+                    isCompetitiveTeamConfiguring = !isCompetitiveTeamConfiguring;
+                }
+            }
+            if (Keyboard.current.commaKey.wasPressedThisFrame)
+            {
+                if (isGUIEnabled)
+                {
+                   isChangingTeam1Score = !isChangingTeam1Score;
+                }
+            }
+
+            // Competitive Adding Score
+            if(isCompetitiveTeam)
+            {
+                if (isChangingTeam1Score)
+                {
+                    if (Keyboard.current.equalsKey.wasPressedThisFrame) Team1Score = Team1Score + 1;
+                    if (Keyboard.current.minusKey.wasPressedThisFrame) Team1Score = Team1Score - 1;
+                }
+                else
+                {
+                    if (Keyboard.current.equalsKey.wasPressedThisFrame) Team2Score = Team2Score + 1;
+                    if (Keyboard.current.minusKey.wasPressedThisFrame) Team2Score = Team2Score - 1;
+                }
+            }
         }
 
         public void OnGUI()
         {
+            GUIStyle buttonStyle = new GUIStyle(GUI.skin.button)
+            {
+                fontSize = 20,
+                normal = { textColor = Color.grey },
+                active = { textColor = Color.white },
+                alignment = TextAnchor.MiddleCenter,
+                fixedWidth = 80,
+                fixedHeight = 40
+            };
+
+            GUIStyle buttonStyleNext = new GUIStyle(GUI.skin.button)
+            {
+                fontSize = 4,
+                normal = { textColor = Color.grey },
+                active = { textColor = Color.white },
+                alignment = TextAnchor.MiddleCenter,
+                fixedWidth = 80,
+                fixedHeight = 20
+            };
+
+            GUIStyle labelStyle = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 12,
+                normal = { textColor = Color.white },
+                alignment = TextAnchor.MiddleCenter
+            };
+            GUIStyle labelStylesmall = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 9,
+                normal = { textColor = Color.white },
+                alignment = TextAnchor.MiddleCenter
+            };
+
+            GUIStyle headerStyle = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 16,
+                normal = { textColor = Color.white },
+                alignment = TextAnchor.MiddleCenter
+            };
+
+            GUIStyle TeamScoreStyle = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 30,
+                normal = { textColor = Color.grey },
+                alignment = TextAnchor.MiddleCenter
+            };
+
+
+            float screenWidth = Screen.width;
+            float screenHeight = Screen.height;
+
+            float panelWidth = 300;
+            float panelHeight = 200;
+
+            Rect panelRect = new Rect((screenWidth - panelWidth) / 2, screenHeight - panelHeight - 20, panelWidth, panelHeight);
+
             if (isGUIEnabled)
             {
-                GUIStyle buttonStyle = new GUIStyle(GUI.skin.button)
-                {
-                    fontSize = 20,
-                    normal = { textColor = Color.grey },
-                    active = { textColor = Color.white },
-                    alignment = TextAnchor.MiddleCenter,
-                    fixedWidth = 80,
-                    fixedHeight = 40
-                };
-
-                GUIStyle buttonStyleNext = new GUIStyle(GUI.skin.button)
-                {
-                    fontSize = 4,
-                    normal = { textColor = Color.grey },
-                    active = { textColor = Color.white },
-                    alignment = TextAnchor.MiddleCenter,
-                    fixedWidth = 80,
-                    fixedHeight = 20
-                };
-
-                GUIStyle labelStyle = new GUIStyle(GUI.skin.label)
-                {
-                    fontSize = 12,
-                    normal = { textColor = Color.white },
-                    alignment = TextAnchor.MiddleCenter
-                };
-                GUIStyle labelStylesmall = new GUIStyle(GUI.skin.label)
-                {
-                    fontSize = 9,
-                    normal = { textColor = Color.white },
-                    alignment = TextAnchor.MiddleCenter
-                };
-
-                GUIStyle headerStyle = new GUIStyle(GUI.skin.label)
-                {
-                    fontSize = 16,
-                    normal = { textColor = Color.yellow },
-                    alignment = TextAnchor.MiddleCenter
-                };
-
-                float screenWidth = Screen.width;
-                float screenHeight = Screen.height;
-
-                float panelWidth = 300;
-                float panelHeight = 200;
-
-                Rect panelRect = new Rect((screenWidth - panelWidth) / 2, screenHeight - panelHeight - 20, panelWidth, panelHeight);
+                // Actual UI
 
                 GUI.Box(panelRect, "", GUI.skin.box);
 
@@ -277,7 +335,26 @@ namespace GorillaCamera
                     GUI.Label(new Rect(panelRect.x + 10, panelRect.y + panelHeight - 30, panelWidth - 20, 20), "Rig Time Delay", labelStyle);
                     RandomRigTimeChangeDelay = GUI.HorizontalSlider(new Rect(panelRect.x + 10, panelRect.y + panelHeight - 10, panelWidth - 20, 20), RandomRigTimeChangeDelay, 1f, 20f);
                 }
+
+
+                if(isCompetitiveTeamConfiguring)
+                {
+                    Team1Name = GUI.TextArea(new Rect(panelRect.x, panelRect.y - 120, panelWidth, 30), Team1Name);
+                    Team2Name = GUI.TextArea(new Rect(panelRect.x, panelRect.y - 90, panelWidth, 30), Team2Name);
+                }
             }
+            // Competitive UI
+            if (isCompetitiveTeam)
+            {
+                GUI.Label(new Rect((screenWidth - panelWidth) / 2, 10, panelWidth, 30), $"{Team1Name} Score: {Team1Score}", TeamScoreStyle);
+                GUI.Label(new Rect((screenWidth - panelWidth) / 2, 40, panelWidth, 30), $"{Team2Name} Score: {Team2Score}", TeamScoreStyle);
+                GUI.Label(new Rect((screenWidth - panelWidth) / 2, 80, panelWidth, 30), $"Currently Changing: {GetCurrentChangingTeam()}", labelStylesmall);
+            }
+        }
+
+        public string GetCurrentChangingTeam()
+        {
+            return isChangingTeam1Score ? Team1Name : Team2Name;
         }
 
         private void SwitchCameraMode(int direction)
