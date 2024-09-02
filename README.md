@@ -1,5 +1,9 @@
 # GorillaCamera
  A simple gorilla tag camera!
+
+
+ (Gif may be outated due to tweening update)
+
  
 ![A Video of Cholocat / Elliot Using The Third Person Setting](https://github.com/SteveTheAnimator/GorillaCamera/blob/main/Marketing/gorillacam.gif)
 
