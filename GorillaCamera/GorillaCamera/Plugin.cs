@@ -25,6 +25,7 @@ namespace GorillaCamera
         public GameObject LocalPlayerObject;
         public GameObject LocalPlayerCameraObject;
         public VRRig FollowingRig;
+        public GameObject VisibleCameraObject = null;
 
         // Values
         public float SmoothAmount = 0.1f;
@@ -34,6 +35,7 @@ namespace GorillaCamera
         public float RandomRigTimeChangeDelay = 7f;
         public bool TweenFirstPerson = false;
         public float RotationTime = 0.1f;
+        public bool ShowCameraPositon = false;
 
         // Competitive
         public bool isCompetitiveTeam = false;
@@ -68,6 +70,19 @@ namespace GorillaCamera
             CameraBrain = GorillaTagger.Instance.thirdPersonCamera.GetComponentInChildren<CinemachineBrain>();
             LocalPlayerObject = GorillaLocomotion.Player.Instance.gameObject;
             LocalPlayerCameraObject = GorillaTagger.Instance.mainCamera.gameObject;
+            SetupVCO();
+        }
+
+        public void SetupVCO()
+        {
+            VisibleCameraObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            VisibleCameraObject.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+            VisibleCameraObject.GetComponent<Renderer>().material = new Material(Shader.Find("GUI/Text Shader"));
+            VisibleCameraObject.GetComponent<Renderer>().material.color = Color.grey;
+            VisibleCameraObject.GetComponent<Renderer>().enabled = false;
+            VisibleCameraObject.transform.SetParent(ShoulderCamera.transform, false); // mja ha ha
+            VisibleCameraObject.transform.localPosition = new Vector3(0, 0, -0.1f);
+            GameObject.Destroy(VisibleCameraObject.GetComponent<BoxCollider>());
         }
 
         public void Update()
@@ -210,6 +225,12 @@ namespace GorillaCamera
                    isChangingTeam1Score = !isChangingTeam1Score;
                 }
             }
+            if(Keyboard.current.endKey.wasPressedThisFrame)
+            {
+                ShowCameraPositon = !ShowCameraPositon;
+            }
+
+            VisibleCameraObject.GetComponent<Renderer>().enabled = ShowCameraPositon;
 
             // Competitive Adding Score
             if(isCompetitiveTeam)

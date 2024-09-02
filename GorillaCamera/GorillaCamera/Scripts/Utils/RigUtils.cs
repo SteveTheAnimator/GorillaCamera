@@ -60,5 +60,19 @@ namespace GorillaCamera.Scripts.Utils
                 }
             }
         }
+        public static VRRig GetRigFromName(string name)
+        {
+            var players = PhotonNetwork.PlayerList;
+            var randomPlayer = players[UnityEngine.Random.Range(0, players.Length)];
+            VRRig rig = GorillaGameManager.instance.FindPlayerVRRig(randomPlayer);
+            if(rig.playerName == name) 
+            {
+                return rig;
+            }
+            else
+            {
+                return GetRigFromName(name);
+            }
+        }
     }
 }
