@@ -1,7 +1,11 @@
 # GorillaCamera
  A simple gorilla tag camera!
+ 
+![A Video of Cholocat / Elliot Using The Third Person Setting](https://github.com/SteveTheAnimator/GorillaCamera/blob/main/Marketing/gorillacam.gif)
 
-## Features
+# Features
+
+## Camera Settings
             Third Person - Puts the camera in a third person view
             First Person - Shows the view of the player
             Second Person - Puts the camera in a second person view
@@ -11,14 +15,6 @@
             Random Survivor View - Follows a random surviving player for a specified time
 
 
-
-
-## Showcases
-
-A Gif of Cholocat / Elliot Using The Third Person Setting
-
- 
-![A Video of Cholocat / Elliot Using The Third Person Setting](https://github.com/SteveTheAnimator/GorillaCamera/blob/main/Marketing/gorillacam.gif)
 
 ## Competitive
 
@@ -43,3 +39,7 @@ Press , To change the selected team you wanna change the score of
 
 
 Press - or = to remove or add points!
+
+## Misc Settings
+
+Press the END key to show and hide the camera.
