@@ -343,9 +343,10 @@ namespace GorillaCamera
                     {
                         TweenFirstPerson = !TweenFirstPerson;
                     }
-                    GUI.Label(new Rect(panelRect.x + 10, panelRect.y + panelHeight - 150, panelWidth - 20, 20), "Rotation Time", labelStylesmall);
-                    RotationTime = GUI.HorizontalSlider(new Rect(panelRect.x + 10, panelRect.y + panelHeight - 130, panelWidth - 20, 20), RotationTime, 0f, 1f);
                 }
+
+                GUI.Label(new Rect(panelRect.x + 10, panelRect.y + panelHeight - 150, panelWidth - 20, 20), "Rotation Time", labelStylesmall);
+                RotationTime = GUI.HorizontalSlider(new Rect(panelRect.x + 10, panelRect.y + panelHeight - 130, panelWidth - 20, 20), RotationTime, 0f, 1f);
 
                 GUI.Label(new Rect(panelRect.x + 10, panelRect.y + panelHeight - 120, panelWidth - 20, 20), "FOV", labelStyle);
                 ActualCamera.fieldOfView = GUI.HorizontalSlider(new Rect(panelRect.x + 10, panelRect.y + panelHeight - 100, panelWidth - 20, 20), ActualCamera.fieldOfView, 1f, 180f);
