@@ -11,6 +11,7 @@ using static GorillaCamera.Scripts.Utils.RigUtils;
 using static GorillaCamera.Scripts.Utils.GameModeUtils;
 using Photon.Pun;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace GorillaCamera
 {
@@ -18,6 +19,9 @@ namespace GorillaCamera
     [BepInPlugin(PluginInfo.GUID, PluginInfo.Name, PluginInfo.Version)]
     public class Plugin : BaseUnityPlugin
     {
+        // Instance
+        public static Plugin instance {  get; private set; }
+
         // References
         public GameObject ShoulderCamera;
         public Camera ActualCamera;
@@ -33,7 +37,7 @@ namespace GorillaCamera
         public bool isGUIEnabled = false;
         public float RandomRigTime = 0f;
         public float RandomRigTimeChangeDelay = 7f;
-        public bool TweenFirstPerson = false;
+        public bool TweenFirstPerson = true;
         public float RotationTime = 0.1f;
         public bool ShowCameraPositon = false;
 
@@ -46,20 +50,11 @@ namespace GorillaCamera
         public int Team2Score = 0;
         public bool isChangingTeam1Score = true;
 
-        public void Start()
-        {
-            Utilla.Events.GameInitialized += OnGameInitialized;
-        }
+        public void Start() { Utilla.Events.GameInitialized += OnGameInitialized; }
 
-        public void OnEnable()
-        {
-            HarmonyPatches.ApplyHarmonyPatches();
-        }
+        public void OnEnable() { HarmonyPatches.ApplyHarmonyPatches(); }
 
-        public void OnDisable()
-        {
-            HarmonyPatches.RemoveHarmonyPatches();
-        }
+        public void OnDisable() { HarmonyPatches.RemoveHarmonyPatches(); }
 
         public void OnGameInitialized(object sender, EventArgs e)
         {
@@ -94,9 +89,10 @@ namespace GorillaCamera
                 Vector3 targetPosition = LocalPlayerCameraObject.transform.position + LocalPlayerCameraObject.transform.TransformDirection(offset);
                 CameraBrain.enabled = false;
                 ShoulderCamera.transform.position = Vector3.SmoothDamp(ShoulderCamera.transform.position, targetPosition, ref Velocity, SmoothAmount);
-                ShoulderCamera.transform.LookAt(LocalPlayerCameraObject.transform.position);
+                Quaternion targetRotation = Quaternion.LookRotation(LocalPlayerCameraObject.transform.position - ShoulderCamera.transform.position);
+                ShoulderCamera.transform.rotation = Quaternion.LerpUnclamped(ShoulderCamera.transform.rotation, targetRotation, RotationTime);
             }
-            if(CurrentCameraMode == CameraModes.FirstPerson)
+            if (CurrentCameraMode == CameraModes.FirstPerson)
             {
                 Vector3 offset = new Vector3(0f, 0f, 0f);
                 Vector3 targetPosition = LocalPlayerCameraObject.transform.position + LocalPlayerCameraObject.transform.TransformDirection(offset);
@@ -109,7 +105,8 @@ namespace GorillaCamera
                 {
                     ShoulderCamera.transform.position = LocalPlayerCameraObject.transform.position;
                 }
-                ShoulderCamera.transform.rotation = Quaternion.LerpUnclamped(ShoulderCamera.transform.rotation, LocalPlayerCameraObject.transform.rotation, RotationTime);
+                Quaternion targetRotation = LocalPlayerCameraObject.transform.rotation;
+                ShoulderCamera.transform.rotation = Quaternion.LerpUnclamped(ShoulderCamera.transform.rotation, targetRotation, RotationTime);
             }
             if (CurrentCameraMode == CameraModes.SecondPerson)
             {
@@ -117,18 +114,20 @@ namespace GorillaCamera
                 Vector3 targetPosition = LocalPlayerCameraObject.transform.position + LocalPlayerCameraObject.transform.TransformDirection(offset);
                 CameraBrain.enabled = false;
                 ShoulderCamera.transform.position = Vector3.SmoothDamp(ShoulderCamera.transform.position, targetPosition, ref Velocity, SmoothAmount);
-                ShoulderCamera.transform.LookAt(LocalPlayerCameraObject.transform.position);
+                Quaternion targetRotation = Quaternion.LookRotation(LocalPlayerCameraObject.transform.position - ShoulderCamera.transform.position);
+                ShoulderCamera.transform.rotation = Quaternion.LerpUnclamped(ShoulderCamera.transform.rotation, targetRotation, RotationTime);
             }
-            if(CurrentCameraMode == CameraModes.Following)
+            if (CurrentCameraMode == CameraModes.Following)
             {
                 Vector3 offset = new Vector3(0f, 0f, 0f);
                 Vector3 targetPosition = LocalPlayerCameraObject.transform.position + LocalPlayerCameraObject.transform.TransformDirection(offset);
                 CameraBrain.enabled = false;
-                if(!IsThisNearThat(ShoulderCamera.transform.position, LocalPlayerObject.transform.position, 1f))
+                if (!IsThisNearThat(ShoulderCamera.transform.position, LocalPlayerObject.transform.position, 1f))
                 {
                     ShoulderCamera.transform.position = Vector3.SmoothDamp(ShoulderCamera.transform.position, targetPosition, ref Velocity, SmoothAmount + 0.2f);
                 }
-                ShoulderCamera.transform.LookAt(LocalPlayerCameraObject.transform.position);
+                Quaternion targetRotation = Quaternion.LookRotation(LocalPlayerCameraObject.transform.position - ShoulderCamera.transform.position);
+                ShoulderCamera.transform.rotation = Quaternion.LerpUnclamped(ShoulderCamera.transform.rotation, targetRotation, RotationTime);
             }
             if (PhotonNetwork.InRoom)
             {
@@ -145,7 +144,8 @@ namespace GorillaCamera
                         Vector3 targetPosition = FollowingRig.headMesh.transform.position + FollowingRig.headMesh.transform.TransformDirection(offset);
                         CameraBrain.enabled = false;
                         ShoulderCamera.transform.position = Vector3.SmoothDamp(ShoulderCamera.transform.position, targetPosition, ref Velocity, SmoothAmount);
-                        ShoulderCamera.transform.LookAt(FollowingRig.headMesh.transform.position);
+                        Quaternion targetRotation = Quaternion.LookRotation(FollowingRig.headMesh.transform.position - ShoulderCamera.transform.position);
+                        ShoulderCamera.transform.rotation = Quaternion.LerpUnclamped(ShoulderCamera.transform.rotation, targetRotation, RotationTime);
                     }
                     else
                     {
@@ -169,7 +169,8 @@ namespace GorillaCamera
                         Vector3 targetPosition = FollowingRig.headMesh.transform.position + FollowingRig.headMesh.transform.TransformDirection(offset);
                         CameraBrain.enabled = false;
                         ShoulderCamera.transform.position = Vector3.SmoothDamp(ShoulderCamera.transform.position, targetPosition, ref Velocity, SmoothAmount);
-                        ShoulderCamera.transform.LookAt(FollowingRig.headMesh.transform.position);
+                        Quaternion targetRotation = Quaternion.LookRotation(FollowingRig.headMesh.transform.position - ShoulderCamera.transform.position);
+                        ShoulderCamera.transform.rotation = Quaternion.LerpUnclamped(ShoulderCamera.transform.rotation, targetRotation, RotationTime);
                     }
                     else
                     {
@@ -190,7 +191,8 @@ namespace GorillaCamera
                         Vector3 targetPosition = FollowingRig.headMesh.transform.position + FollowingRig.headMesh.transform.TransformDirection(offset);
                         CameraBrain.enabled = false;
                         ShoulderCamera.transform.position = Vector3.SmoothDamp(ShoulderCamera.transform.position, targetPosition, ref Velocity, SmoothAmount);
-                        ShoulderCamera.transform.LookAt(FollowingRig.headMesh.transform.position);
+                        Quaternion targetRotation = Quaternion.LookRotation(FollowingRig.headMesh.transform.position - ShoulderCamera.transform.position);
+                        ShoulderCamera.transform.rotation = Quaternion.LerpUnclamped(ShoulderCamera.transform.rotation, targetRotation, RotationTime);
                     }
                     else
                     {
