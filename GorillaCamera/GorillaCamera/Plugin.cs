@@ -12,6 +12,7 @@ using static GorillaCamera.Scripts.Utils.GameModeUtils;
 using Photon.Pun;
 using System.Linq;
 using System.Collections.Generic;
+using UnityEngine.UIElements;
 
 namespace GorillaCamera
 {
@@ -40,6 +41,7 @@ namespace GorillaCamera
         public bool TweenFirstPerson = true;
         public float RotationTime = 0.1f;
         public bool ShowCameraPositon = false;
+        public bool ShowFollowingPlayerName = true;
 
         // Competitive
         public bool isCompetitiveTeam = false;
@@ -201,7 +203,33 @@ namespace GorillaCamera
                     }
                 }
             }
-
+            if(CurrentCameraMode == CameraModes.LeftHand)
+            {
+                Vector3 offset = new Vector3(0f, 0f, 0f);
+                Vector3 targetPosition = GorillaTagger.Instance.offlineVRRig.leftHandTransform.position + GorillaTagger.Instance.offlineVRRig.leftHandTransform.TransformDirection(offset);
+                CameraBrain.enabled = false;
+                ShoulderCamera.transform.position = Vector3.SmoothDamp(ShoulderCamera.transform.position, targetPosition, ref Velocity, SmoothAmount - 0.06f);
+                Quaternion targetRotation = Quaternion.LookRotation(LocalPlayerCameraObject.transform.position - ShoulderCamera.transform.position);
+                ShoulderCamera.transform.rotation = Quaternion.LerpUnclamped(ShoulderCamera.transform.rotation, targetRotation, RotationTime);
+            }
+            if (CurrentCameraMode == CameraModes.RightHand)
+            {
+                Vector3 offset = new Vector3(0f, 0f, 0f);
+                Vector3 targetPosition = GorillaTagger.Instance.offlineVRRig.rightHandTransform.position + GorillaTagger.Instance.offlineVRRig.rightHandTransform.TransformDirection(offset);
+                CameraBrain.enabled = false;
+                ShoulderCamera.transform.position = Vector3.SmoothDamp(ShoulderCamera.transform.position, targetPosition, ref Velocity, SmoothAmount - 0.06f);
+                Quaternion targetRotation = Quaternion.LookRotation(LocalPlayerCameraObject.transform.position - ShoulderCamera.transform.position);
+                ShoulderCamera.transform.rotation = Quaternion.LerpUnclamped(ShoulderCamera.transform.rotation, targetRotation, RotationTime);
+            }
+            if (CurrentCameraMode == CameraModes.InMiddle)
+            {
+                Vector3 offset = new Vector3(0f, 0f, 0f);
+                Vector3 targetPosition = (GorillaTagger.Instance.offlineVRRig.rightHandTransform.position + GorillaTagger.Instance.offlineVRRig.leftHandTransform.position) / 2 + offset;
+                CameraBrain.enabled = false;
+                ShoulderCamera.transform.position = Vector3.SmoothDamp(ShoulderCamera.transform.position, targetPosition, ref Velocity, SmoothAmount - 0.06f);
+                Quaternion targetRotation = Quaternion.LookRotation(LocalPlayerCameraObject.transform.position - ShoulderCamera.transform.position);
+                ShoulderCamera.transform.rotation = Quaternion.LerpUnclamped(ShoulderCamera.transform.rotation, targetRotation, RotationTime);
+            }
             if (Keyboard.current.rightBracketKey.wasPressedThisFrame)
             {
                 isGUIEnabled = !isGUIEnabled;
@@ -230,9 +258,8 @@ namespace GorillaCamera
             if(Keyboard.current.endKey.wasPressedThisFrame)
             {
                 ShowCameraPositon = !ShowCameraPositon;
+                VisibleCameraObject.GetComponent<Renderer>().enabled = ShowCameraPositon;
             }
-
-            VisibleCameraObject.GetComponent<Renderer>().enabled = ShowCameraPositon;
 
             // Competitive Adding Score
             if(isCompetitiveTeam)
@@ -264,7 +291,7 @@ namespace GorillaCamera
 
             GUIStyle buttonStyleNext = new GUIStyle(GUI.skin.button)
             {
-                fontSize = 4,
+                fontSize = 9,
                 normal = { textColor = Color.grey },
                 active = { textColor = Color.white },
                 alignment = TextAnchor.MiddleCenter,
@@ -297,6 +324,12 @@ namespace GorillaCamera
                 fontSize = 30,
                 normal = { textColor = Color.grey },
                 alignment = TextAnchor.MiddleCenter
+            };
+            GUIStyle FollowStyle = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 30,
+                normal = { textColor = Color.grey },
+                alignment = TextAnchor.MiddleRight
             };
 
 
@@ -339,7 +372,7 @@ namespace GorillaCamera
 
                 if (CurrentCameraMode == CameraModes.FirstPerson)
                 {
-                    if(GUI.Button(new Rect(panelRect.x + 10, panelRect.y + panelHeight - 30, panelWidth - 10, 20), $"Tween First Person Position {TweenFirstPerson}", buttonStyleNext))
+                    if (GUI.Button(new Rect(panelRect.x + 10, panelRect.y + panelHeight - 30, panelWidth - 10, 20), $"Tween First Person Position {TweenFirstPerson}", buttonStyleNext))
                     {
                         TweenFirstPerson = !TweenFirstPerson;
                     }
@@ -358,10 +391,14 @@ namespace GorillaCamera
                 {
                     GUI.Label(new Rect(panelRect.x + 10, panelRect.y + panelHeight - 30, panelWidth - 20, 20), "Rig Time Delay", labelStyle);
                     RandomRigTimeChangeDelay = GUI.HorizontalSlider(new Rect(panelRect.x + 10, panelRect.y + panelHeight - 10, panelWidth - 20, 20), RandomRigTimeChangeDelay, 1f, 20f);
+                    if (GUI.Button(new Rect(panelRect.x + 10, panelRect.y + panelHeight - 30, panelWidth - 10, 20), $"Show Following Player Name {ShowFollowingPlayerName}", buttonStyleNext))
+                    {
+                        ShowFollowingPlayerName = !ShowFollowingPlayerName;
+                    }
                 }
 
 
-                if(isCompetitiveTeamConfiguring)
+                if (isCompetitiveTeamConfiguring)
                 {
                     Team1Name = GUI.TextArea(new Rect(panelRect.x, panelRect.y - 120, panelWidth, 30), Team1Name);
                     Team2Name = GUI.TextArea(new Rect(panelRect.x, panelRect.y - 90, panelWidth, 30), Team2Name);
@@ -373,6 +410,16 @@ namespace GorillaCamera
                 GUI.Label(new Rect((screenWidth - panelWidth) / 2, 10, panelWidth, 30), $"{Team1Name} Score: {Team1Score}", TeamScoreStyle);
                 GUI.Label(new Rect((screenWidth - panelWidth) / 2, 40, panelWidth, 30), $"{Team2Name} Score: {Team2Score}", TeamScoreStyle);
                 GUI.Label(new Rect((screenWidth - panelWidth) / 2, 80, panelWidth, 30), $"Currently Changing: {GetCurrentChangingTeam()}", labelStylesmall);
+            }
+            if (CurrentCameraMode == CameraModes.RandomView || CurrentCameraMode == CameraModes.RandomSurvivorView || CurrentCameraMode == CameraModes.RandomTaggedView)
+            {
+                if (FollowingRig != null)
+                {
+                    if (ShowFollowingPlayerName)
+                    {
+                        GUI.Label(new Rect(30, 120, panelWidth + 200, 90), "Currently Spectating: " + FollowingRig.playerText.text, FollowStyle);
+                    }
+                }
             }
         }
 
@@ -393,14 +440,14 @@ namespace GorillaCamera
             {
                 if(!isThisGameMode("INFECTION"))
                 {
-                    CurrentCameraMode = CameraModes.ThirdPerson;
+                    CurrentCameraMode = direction == 1 ? CameraModes.LeftHand : CameraModes.Following;
                 }
             }
             if (CurrentCameraMode == CameraModes.RandomView)
             {
                 if (!PhotonNetwork.InRoom)
                 {
-                    CurrentCameraMode = CameraModes.ThirdPerson;
+                    CurrentCameraMode = direction == 1 ? CameraModes.LeftHand : CameraModes.Following;
                 }
             }
         }

@@ -14,7 +14,10 @@ namespace GorillaCamera.Scripts.Important
             Following,
             RandomView,
             RandomTaggedView,
-            RandomSurvivorView
+            RandomSurvivorView,
+            LeftHand,
+            RightHand,
+            InMiddle
         }
     }
 }
