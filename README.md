@@ -1,7 +1,8 @@
 
 <p align="center">
-  <a href="#"><img src="https://github.com/SteveTheAnimator/GorillaCamera/blob/main/Marketing/gorillacam.png"></a>
+  <a href="#"><img src="https://github.com/SteveTheAnimator/GorillaCamera/blob/main/Marketing/gorillacam.png" width="500"></a>
 </p>
+
 
 
 <p align="center">
