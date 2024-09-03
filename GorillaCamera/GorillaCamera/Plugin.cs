@@ -31,6 +31,9 @@ namespace GorillaCamera
         public GameObject LocalPlayerCameraObject;
         public VRRig FollowingRig;
         public GameObject VisibleCameraObject = null;
+        private Texture2D boxTexture;
+        private Texture2D buttonTexture;
+        private Texture2D headerTexture;
 
         // Values
         public float SmoothAmount = 0.1f;
@@ -67,6 +70,18 @@ namespace GorillaCamera
             CameraBrain = GorillaTagger.Instance.thirdPersonCamera.GetComponentInChildren<CinemachineBrain>();
             LocalPlayerObject = GorillaLocomotion.Player.Instance.gameObject;
             LocalPlayerCameraObject = GorillaTagger.Instance.mainCamera.gameObject;
+
+            boxTexture = new Texture2D(1, 1);
+            boxTexture.SetPixel(0, 0, new Color(0.1f, 0.1f, 0.1f, 0.9f));
+            boxTexture.Apply();
+
+            buttonTexture = new Texture2D(1, 1);
+            buttonTexture.SetPixel(0, 0, new Color(0.1f, 0.1f, 0.1f, 0.9f));
+            buttonTexture.Apply();
+
+            headerTexture = new Texture2D(1, 1);
+            headerTexture.SetPixel(0, 0, new Color(0.1f, 0.1f, 0.1f, 0.9f));
+            headerTexture.Apply();
             SetupVCO();
         }
 
@@ -282,8 +297,9 @@ namespace GorillaCamera
             GUIStyle buttonStyle = new GUIStyle(GUI.skin.button)
             {
                 fontSize = 20,
-                normal = { textColor = Color.grey },
-                active = { textColor = Color.white },
+                normal = { textColor = Color.grey, background = buttonTexture },
+                active = { textColor = Color.white, background = buttonTexture },
+                hover = { textColor = Color.white, background = buttonTexture },
                 alignment = TextAnchor.MiddleCenter,
                 fixedWidth = 80,
                 fixedHeight = 40
@@ -292,8 +308,9 @@ namespace GorillaCamera
             GUIStyle buttonStyleNext = new GUIStyle(GUI.skin.button)
             {
                 fontSize = 9,
-                normal = { textColor = Color.grey },
-                active = { textColor = Color.white },
+                normal = { textColor = Color.grey, background = buttonTexture },
+                active = { textColor = Color.white, background = buttonTexture },
+                hover = { textColor = Color.white, background = buttonTexture },
                 alignment = TextAnchor.MiddleCenter,
                 fixedWidth = 80,
                 fixedHeight = 20
@@ -331,7 +348,10 @@ namespace GorillaCamera
                 normal = { textColor = Color.grey },
                 alignment = TextAnchor.MiddleRight
             };
-
+            GUIStyle BoxStyle = new GUIStyle(GUI.skin.box)
+            {
+                normal = { background = boxTexture }
+            };
 
             float screenWidth = Screen.width;
             float screenHeight = Screen.height;
@@ -345,7 +365,7 @@ namespace GorillaCamera
             {
                 // Actual UI
 
-                GUI.Box(panelRect, "", GUI.skin.box);
+                GUI.Box(panelRect, "", BoxStyle);
 
                 float buttonWidth = 80;
                 float buttonHeight = 40;
@@ -434,22 +454,22 @@ namespace GorillaCamera
             int currentIndex = Array.IndexOf(modes, CurrentCameraMode);
 
             int newIndex = (currentIndex + direction + modes.Length) % modes.Length;
-            CurrentCameraMode = modes[newIndex];
-            if(CurrentCameraMode == CameraModes.RandomView || CurrentCameraMode == CameraModes.RandomSurvivorView || CurrentCameraMode == CameraModes.RandomTaggedView) { FollowingRig = null; RandomRigTime = 0; }
-            if(CurrentCameraMode == CameraModes.RandomTaggedView || CurrentCameraMode == CameraModes.RandomSurvivorView)
+            if(modes[newIndex] == CameraModes.RandomView || modes[newIndex] == CameraModes.RandomSurvivorView || modes[newIndex] == CameraModes.RandomTaggedView) { FollowingRig = null; RandomRigTime = 0; }
+            if(modes[newIndex] == CameraModes.RandomTaggedView || modes[newIndex] == CameraModes.RandomSurvivorView)
             {
                 if(!isThisGameMode("INFECTION"))
                 {
-                    CurrentCameraMode = direction == 1 ? CameraModes.LeftHand : CameraModes.Following;
+                    modes[newIndex] = direction == 1 ? CameraModes.LeftHand : CameraModes.Following;
                 }
             }
-            if (CurrentCameraMode == CameraModes.RandomView)
+            if (modes[newIndex] == CameraModes.RandomView)
             {
                 if (!PhotonNetwork.InRoom)
                 {
-                    CurrentCameraMode = direction == 1 ? CameraModes.LeftHand : CameraModes.Following;
+                    modes[newIndex] = direction == 1 ? CameraModes.LeftHand : CameraModes.Following;
                 }
             }
+            CurrentCameraMode = modes[newIndex];
         }
     }
     public class PluginInfo
