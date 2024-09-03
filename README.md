@@ -1,5 +1,16 @@
-# GorillaCamera
- A simple gorilla tag camera!
+
+<p align="center">
+  <a href="#"><img src="https://github.com/SteveTheAnimator/GorillaCamera/blob/main/Marketing/gorillacam.png"></a>
+</p>
+
+
+<p align="center">
+	<a href="https://github.com/SteveTheAnimator/GorillaCamera/releases/latest"><img src="https://img.shields.io/github/v/release/SteveTheAnimator/GorillaCamera?label=latest&style=for-the-badge"></a>
+	<a href="https://github.com/SteveTheAnimator/GorillaCamera/releases"><img src="https://img.shields.io/github/downloads/SteveTheAnimator/GorillaCamera/latest/MelonLoaderInstaller.apk?style=for-the-badge"></a>
+	<a href="https://github.com/SteveTheAnimator/GorillaCamera/graphs/contributors"><img src="https://img.shields.io/github/contributors/SteveTheAnimator/GorillaCamera?style=for-the-badge"></a>
+</p>
+ 
+---
 
 
  (Gif may be outated due to tweening update)
