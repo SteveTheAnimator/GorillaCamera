@@ -28,7 +28,7 @@ This camera mod has features to do scrims!
 
 This is an example image taken in a modded lobby by me.
 
-![yap](https://github.com/SteveTheAnimator/GorillaCamera/blob/main/Marketing/comptest.png)
+![yap](https://github.com/SteveTheAnimator/GorillaCamera/blob/main/Marketing/newthing.png)
 
 ### Setting Up Competitive
 Press The [ Key to enable the competitive GUI.
