@@ -307,7 +307,7 @@ namespace GorillaCamera
 
             GUIStyle buttonStyleNext = new GUIStyle(GUI.skin.button)
             {
-                fontSize = 9,
+                fontSize = 4,
                 normal = { textColor = Color.grey, background = buttonTexture },
                 active = { textColor = Color.white, background = buttonTexture },
                 hover = { textColor = Color.white, background = buttonTexture },
