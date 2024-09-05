@@ -59,3 +59,8 @@ Press - or = to remove or add points!
 ## Misc Settings
 
 Press the END key to show and hide the camera.
+
+
+
+
+<sub><sup> **This product is not affiliated with Gorilla Tag, Orion Drift or Another Axiom LLC and is not endorsed or otherwise sponsored by Another Axiom LLC. Portions of the materials contained herein are property of Another Axiom LLC. © 2021 Another Axiom LLC.**</sub></sup>
