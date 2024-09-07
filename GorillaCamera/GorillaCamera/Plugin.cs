@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using UnityEngine.UIElements;
 using GorillaCamera.Scripts.Important;
 using GorillaNetworking;
+using GorillaCamera.Scripts.Utils;
 
 namespace GorillaCamera
 {
@@ -223,9 +224,9 @@ namespace GorillaCamera
                     {
                         ShowFollowingPlayerName = !ShowFollowingPlayerName;
                     }
-                    if (GUI.Button(new Rect(panelRect.x + 120, panelRect.y + panelHeight - 30, panelWidth - 10, 20), $"Capture Self {ShowFollowingPlayerName}", buttonStyleNext))
+                    if (GUI.Button(new Rect(panelRect.x + 210, panelRect.y + panelHeight - 30, panelWidth - 10, 20), $"Capture Self {CaptureSelf}", buttonStyleNext))
                     {
-                        ShowFollowingPlayerName = !ShowFollowingPlayerName;
+                        CaptureSelf = !CaptureSelf;
                     }
                 }
 
@@ -346,7 +347,7 @@ namespace GorillaCamera
                 Vector3 offset = new Vector3(0f, 0f, 0f);
                 Vector3 targetPosition = LocalPlayerCameraObject.transform.position + LocalPlayerCameraObject.transform.TransformDirection(offset);
                 CameraBrain.enabled = false;
-                if (!IsThisNearThat(ShoulderCamera.transform.position, LocalPlayerObject.transform.position, 4f))
+                if (!IsThisNearThat(ShoulderCamera.transform.position, LocalPlayerObject.transform.position, 2f))
                 {
                     ShoulderCamera.transform.position = Vector3.SmoothDamp(ShoulderCamera.transform.position, targetPosition, ref Velocity, SmoothAmount + 0.2f);
                 }
