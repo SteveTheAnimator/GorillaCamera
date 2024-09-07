@@ -1,5 +1,17 @@
-# GorillaCamera
- A simple gorilla tag camera!
+
+<p align="center">
+  <a href="#"><img src="https://github.com/SteveTheAnimator/GorillaCamera/blob/main/Marketing/gorillacam.png" width="500"></a>
+</p>
+
+
+
+<p align="center">
+	<a href="https://github.com/SteveTheAnimator/GorillaCamera/releases/latest"><img src="https://img.shields.io/github/v/release/SteveTheAnimator/GorillaCamera?label=latest&style=for-the-badge"></a>
+	<a href="https://github.com/SteveTheAnimator/GorillaCamera/releases"><img src="https://img.shields.io/github/downloads/SteveTheAnimator/GorillaCamera/latest/MelonLoaderInstaller.apk?style=for-the-badge"></a>
+	<a href="https://github.com/SteveTheAnimator/GorillaCamera/graphs/contributors"><img src="https://img.shields.io/github/contributors/SteveTheAnimator/GorillaCamera?style=for-the-badge"></a>
+</p>
+ 
+---
 
 
  (Gif may be outated due to tweening update)
@@ -17,6 +29,10 @@
             Random View - Follows a random player for a specified time
             Random Tagged View - Follows a random tagged player for a specified time
             Random Survivor View - Follows a random surviving player for a specified time
+	    Left Hand - Puts the camera in the left hand and makes the camera look at you.
+     	    Right Hand - Same as left, but in the right hand.
+	    In Middle - Puts the camera in the middle of your hands
+            Disabled - Disables the camera.
 
 
 
@@ -47,3 +63,8 @@ Press - or = to remove or add points!
 ## Misc Settings
 
 Press the END key to show and hide the camera.
+
+
+
+
+<sub><sup> **This product is not affiliated with Gorilla Tag, Orion Drift or Another Axiom LLC and is not endorsed or otherwise sponsored by Another Axiom LLC. Portions of the materials contained herein are property of Another Axiom LLC. © 2021 Another Axiom LLC.**</sub></sup>
