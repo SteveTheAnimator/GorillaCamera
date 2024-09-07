@@ -9,18 +9,18 @@ namespace GorillaCamera.Scripts.Utils
     {
         public static bool isThisGameMode(string gameMode)
         {
-            if(!PhotonNetwork.InRoom)
+            if (!PhotonNetwork.InRoom)
             {
                 return false;
             }
             else
             {
-                if(PhotonNetwork.CurrentRoom.CustomProperties.ToString().Contains(gameMode))
+                if (PhotonNetwork.CurrentRoom.CustomProperties.ToString().Contains(gameMode))
                 {
                     return true;
                 }
                 else
-                return false;
+                    return false;
             }
         }
     }

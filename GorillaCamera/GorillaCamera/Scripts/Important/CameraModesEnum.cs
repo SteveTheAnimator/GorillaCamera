@@ -17,7 +17,8 @@ namespace GorillaCamera.Scripts.Important
             RandomSurvivorView,
             LeftHand,
             RightHand,
-            InMiddle
+            InMiddle,
+            Disabled
         }
     }
 }

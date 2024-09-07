@@ -9,7 +9,7 @@ namespace GorillaCamera.Scripts.Utils
     {
         public static bool IsThisNearThat(Vector3 A, Vector3 B, float Distance)
         {
-            if(Vector3.Distance(A, B) < Distance) return true;
+            if (Vector3.Distance(A, B) < Distance) return true;
             else return false;
         }
     }

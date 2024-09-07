@@ -1,6 +1,5 @@
 ﻿using BepInEx;
 using Cinemachine;
-using GorillaCamera.Scripts.Utils;
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -13,6 +12,8 @@ using Photon.Pun;
 using System.Linq;
 using System.Collections.Generic;
 using UnityEngine.UIElements;
+using GorillaCamera.Scripts.Important;
+using GorillaNetworking;
 
 namespace GorillaCamera
 {
@@ -20,8 +21,9 @@ namespace GorillaCamera
     [BepInPlugin(PluginInfo.GUID, PluginInfo.Name, PluginInfo.Version)]
     public class Plugin : BaseUnityPlugin
     {
+        #region Varibles
         // Instance
-        public static Plugin instance {  get; private set; }
+        public static Plugin instance { get; private set; }
 
         // References
         public GameObject ShoulderCamera;
@@ -33,6 +35,8 @@ namespace GorillaCamera
         public GameObject VisibleCameraObject = null;
         private Texture2D boxTexture;
         private Texture2D buttonTexture;
+        private Texture2D sliderTexture;
+        private Texture2D sliderTexturethumb;
         private Texture2D headerTexture;
 
         // Values
@@ -45,6 +49,7 @@ namespace GorillaCamera
         public float RotationTime = 0.1f;
         public bool ShowCameraPositon = false;
         public bool ShowFollowingPlayerName = true;
+        public bool CaptureSelf = true;
 
         // Competitive
         public bool isCompetitiveTeam = false;
@@ -54,7 +59,9 @@ namespace GorillaCamera
         public int Team1Score = 0;
         public int Team2Score = 0;
         public bool isChangingTeam1Score = true;
+        #endregion
 
+        #region Primary Functions
         public void Start() { Utilla.Events.GameInitialized += OnGameInitialized; }
 
         public void OnEnable() { HarmonyPatches.ApplyHarmonyPatches(); }
@@ -63,243 +70,28 @@ namespace GorillaCamera
 
         public void OnGameInitialized(object sender, EventArgs e)
         {
-            // Setup
-
-            ShoulderCamera = GorillaTagger.Instance.thirdPersonCamera.transform.Find("Shoulder Camera").gameObject;
-            ActualCamera = GorillaTagger.Instance.thirdPersonCamera.transform.Find("Shoulder Camera").gameObject.GetComponent<Camera>();
-            CameraBrain = GorillaTagger.Instance.thirdPersonCamera.GetComponentInChildren<CinemachineBrain>();
-            LocalPlayerObject = GorillaLocomotion.Player.Instance.gameObject;
-            LocalPlayerCameraObject = GorillaTagger.Instance.mainCamera.gameObject;
-
-            boxTexture = new Texture2D(1, 1);
-            boxTexture.SetPixel(0, 0, new Color(0.1f, 0.1f, 0.1f, 0.9f));
-            boxTexture.Apply();
-
-            buttonTexture = new Texture2D(1, 1);
-            buttonTexture.SetPixel(0, 0, new Color(0.1f, 0.1f, 0.1f, 0.9f));
-            buttonTexture.Apply();
-
-            headerTexture = new Texture2D(1, 1);
-            headerTexture.SetPixel(0, 0, new Color(0.1f, 0.1f, 0.1f, 0.9f));
-            headerTexture.Apply();
+            SetupCamera();
+            SetupTextures();
             SetupVCO();
         }
-
-        public void SetupVCO()
-        {
-            VisibleCameraObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            VisibleCameraObject.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-            VisibleCameraObject.GetComponent<Renderer>().material = new Material(Shader.Find("GUI/Text Shader"));
-            VisibleCameraObject.GetComponent<Renderer>().material.color = Color.grey;
-            VisibleCameraObject.GetComponent<Renderer>().enabled = false;
-            VisibleCameraObject.transform.SetParent(ShoulderCamera.transform, false); // mja ha ha
-            VisibleCameraObject.transform.localPosition = new Vector3(0, 0, -0.1f);
-            GameObject.Destroy(VisibleCameraObject.GetComponent<BoxCollider>());
-        }
-
         public void Update()
         {
-            Vector3 Velocity = GorillaTagger.Instance.rigidbody.velocity;
-            if (CurrentCameraMode == CameraModes.ThirdPerson)
-            {
-                Vector3 offset = new Vector3(0.5f, 0.7f, -0.8f);
-                Vector3 targetPosition = LocalPlayerCameraObject.transform.position + LocalPlayerCameraObject.transform.TransformDirection(offset);
-                CameraBrain.enabled = false;
-                ShoulderCamera.transform.position = Vector3.SmoothDamp(ShoulderCamera.transform.position, targetPosition, ref Velocity, SmoothAmount);
-                Quaternion targetRotation = Quaternion.LookRotation(LocalPlayerCameraObject.transform.position - ShoulderCamera.transform.position);
-                ShoulderCamera.transform.rotation = Quaternion.LerpUnclamped(ShoulderCamera.transform.rotation, targetRotation, RotationTime);
-            }
-            if (CurrentCameraMode == CameraModes.FirstPerson)
-            {
-                Vector3 offset = new Vector3(0f, 0f, 0f);
-                Vector3 targetPosition = LocalPlayerCameraObject.transform.position + LocalPlayerCameraObject.transform.TransformDirection(offset);
-                CameraBrain.enabled = false;
-                if (TweenFirstPerson)
-                {
-                    ShoulderCamera.transform.position = Vector3.SmoothDamp(ShoulderCamera.transform.position, targetPosition, ref Velocity, SmoothAmount - 0.06f);
-                }
-                else
-                {
-                    ShoulderCamera.transform.position = LocalPlayerCameraObject.transform.position;
-                }
-                Quaternion targetRotation = LocalPlayerCameraObject.transform.rotation;
-                ShoulderCamera.transform.rotation = Quaternion.LerpUnclamped(ShoulderCamera.transform.rotation, targetRotation, RotationTime);
-            }
-            if (CurrentCameraMode == CameraModes.SecondPerson)
-            {
-                Vector3 offset = new Vector3(0f, 0f, 2f);
-                Vector3 targetPosition = LocalPlayerCameraObject.transform.position + LocalPlayerCameraObject.transform.TransformDirection(offset);
-                CameraBrain.enabled = false;
-                ShoulderCamera.transform.position = Vector3.SmoothDamp(ShoulderCamera.transform.position, targetPosition, ref Velocity, SmoothAmount);
-                Quaternion targetRotation = Quaternion.LookRotation(LocalPlayerCameraObject.transform.position - ShoulderCamera.transform.position);
-                ShoulderCamera.transform.rotation = Quaternion.LerpUnclamped(ShoulderCamera.transform.rotation, targetRotation, RotationTime);
-            }
-            if (CurrentCameraMode == CameraModes.Following)
-            {
-                Vector3 offset = new Vector3(0f, 0f, 0f);
-                Vector3 targetPosition = LocalPlayerCameraObject.transform.position + LocalPlayerCameraObject.transform.TransformDirection(offset);
-                CameraBrain.enabled = false;
-                if (!IsThisNearThat(ShoulderCamera.transform.position, LocalPlayerObject.transform.position, 1f))
-                {
-                    ShoulderCamera.transform.position = Vector3.SmoothDamp(ShoulderCamera.transform.position, targetPosition, ref Velocity, SmoothAmount + 0.2f);
-                }
-                Quaternion targetRotation = Quaternion.LookRotation(LocalPlayerCameraObject.transform.position - ShoulderCamera.transform.position);
-                ShoulderCamera.transform.rotation = Quaternion.LerpUnclamped(ShoulderCamera.transform.rotation, targetRotation, RotationTime);
-            }
-            if (PhotonNetwork.InRoom)
-            {
-                if (CurrentCameraMode == CameraModes.RandomView)
-                {
-                    if (RandomRigTime < Time.time)
-                    {
-                        FollowingRig = GetRandomRig(true);
-                        RandomRigTime = Time.time + RandomRigTimeChangeDelay;
-                    }
-                    if (FollowingRig != null)
-                    {
-                        Vector3 offset = new Vector3(0.5f, 0.7f, -0.8f);
-                        Vector3 targetPosition = FollowingRig.headMesh.transform.position + FollowingRig.headMesh.transform.TransformDirection(offset);
-                        CameraBrain.enabled = false;
-                        ShoulderCamera.transform.position = Vector3.SmoothDamp(ShoulderCamera.transform.position, targetPosition, ref Velocity, SmoothAmount);
-                        Quaternion targetRotation = Quaternion.LookRotation(FollowingRig.headMesh.transform.position - ShoulderCamera.transform.position);
-                        ShoulderCamera.transform.rotation = Quaternion.LerpUnclamped(ShoulderCamera.transform.rotation, targetRotation, RotationTime);
-                    }
-                    else
-                    {
-                        FollowingRig = GetRandomRig(true);
-                        RandomRigTime = Time.time + RandomRigTimeChangeDelay;
-                    }
-                }
-            }
-            if (isThisGameMode("INFECTION"))
-            {
-                if (CurrentCameraMode == CameraModes.RandomTaggedView)
-                {
-                    if (RandomRigTime < Time.time)
-                    {
-                        FollowingRig = GetRandomRig(true, true, false);
-                        RandomRigTime = Time.time + RandomRigTimeChangeDelay;
-                    }
-                    if (FollowingRig != null)
-                    {
-                        Vector3 offset = new Vector3(0.5f, 0.7f, -0.8f);
-                        Vector3 targetPosition = FollowingRig.headMesh.transform.position + FollowingRig.headMesh.transform.TransformDirection(offset);
-                        CameraBrain.enabled = false;
-                        ShoulderCamera.transform.position = Vector3.SmoothDamp(ShoulderCamera.transform.position, targetPosition, ref Velocity, SmoothAmount);
-                        Quaternion targetRotation = Quaternion.LookRotation(FollowingRig.headMesh.transform.position - ShoulderCamera.transform.position);
-                        ShoulderCamera.transform.rotation = Quaternion.LerpUnclamped(ShoulderCamera.transform.rotation, targetRotation, RotationTime);
-                    }
-                    else
-                    {
-                        FollowingRig = GetRandomRig(true, true, false);
-                        RandomRigTime = Time.time + RandomRigTimeChangeDelay;
-                    }
-                }
-                if (CurrentCameraMode == CameraModes.RandomSurvivorView)
-                {
-                    if (RandomRigTime < Time.time)
-                    {
-                        FollowingRig = GetRandomRig(true, false, true);
-                        RandomRigTime = Time.time + RandomRigTimeChangeDelay;
-                    }
-                    if (FollowingRig != null)
-                    {
-                        Vector3 offset = new Vector3(0.5f, 0.7f, -0.8f);
-                        Vector3 targetPosition = FollowingRig.headMesh.transform.position + FollowingRig.headMesh.transform.TransformDirection(offset);
-                        CameraBrain.enabled = false;
-                        ShoulderCamera.transform.position = Vector3.SmoothDamp(ShoulderCamera.transform.position, targetPosition, ref Velocity, SmoothAmount);
-                        Quaternion targetRotation = Quaternion.LookRotation(FollowingRig.headMesh.transform.position - ShoulderCamera.transform.position);
-                        ShoulderCamera.transform.rotation = Quaternion.LerpUnclamped(ShoulderCamera.transform.rotation, targetRotation, RotationTime);
-                    }
-                    else
-                    {
-                        FollowingRig = GetRandomRig(true, false, true);
-                        RandomRigTime = Time.time + RandomRigTimeChangeDelay;
-                    }
-                }
-            }
-            if(CurrentCameraMode == CameraModes.LeftHand)
-            {
-                Vector3 offset = new Vector3(0f, 0f, 0f);
-                Vector3 targetPosition = GorillaTagger.Instance.offlineVRRig.leftHandTransform.position + GorillaTagger.Instance.offlineVRRig.leftHandTransform.TransformDirection(offset);
-                CameraBrain.enabled = false;
-                ShoulderCamera.transform.position = Vector3.SmoothDamp(ShoulderCamera.transform.position, targetPosition, ref Velocity, SmoothAmount - 0.06f);
-                Quaternion targetRotation = Quaternion.LookRotation(LocalPlayerCameraObject.transform.position - ShoulderCamera.transform.position);
-                ShoulderCamera.transform.rotation = Quaternion.LerpUnclamped(ShoulderCamera.transform.rotation, targetRotation, RotationTime);
-            }
-            if (CurrentCameraMode == CameraModes.RightHand)
-            {
-                Vector3 offset = new Vector3(0f, 0f, 0f);
-                Vector3 targetPosition = GorillaTagger.Instance.offlineVRRig.rightHandTransform.position + GorillaTagger.Instance.offlineVRRig.rightHandTransform.TransformDirection(offset);
-                CameraBrain.enabled = false;
-                ShoulderCamera.transform.position = Vector3.SmoothDamp(ShoulderCamera.transform.position, targetPosition, ref Velocity, SmoothAmount - 0.06f);
-                Quaternion targetRotation = Quaternion.LookRotation(LocalPlayerCameraObject.transform.position - ShoulderCamera.transform.position);
-                ShoulderCamera.transform.rotation = Quaternion.LerpUnclamped(ShoulderCamera.transform.rotation, targetRotation, RotationTime);
-            }
-            if (CurrentCameraMode == CameraModes.InMiddle)
-            {
-                Vector3 offset = new Vector3(0f, 0f, 0f);
-                Vector3 targetPosition = (GorillaTagger.Instance.offlineVRRig.rightHandTransform.position + GorillaTagger.Instance.offlineVRRig.leftHandTransform.position) / 2 + offset;
-                CameraBrain.enabled = false;
-                ShoulderCamera.transform.position = Vector3.SmoothDamp(ShoulderCamera.transform.position, targetPosition, ref Velocity, SmoothAmount - 0.06f);
-                Quaternion targetRotation = Quaternion.LookRotation(LocalPlayerCameraObject.transform.position - ShoulderCamera.transform.position);
-                ShoulderCamera.transform.rotation = Quaternion.LerpUnclamped(ShoulderCamera.transform.rotation, targetRotation, RotationTime);
-            }
-            if (Keyboard.current.rightBracketKey.wasPressedThisFrame)
-            {
-                isGUIEnabled = !isGUIEnabled;
-            }
-            if(Keyboard.current.leftBracketKey.wasPressedThisFrame) 
-            { 
-                if(isGUIEnabled)
-                {
-                    isCompetitiveTeam = !isCompetitiveTeam;
-                }
-            }
-            if (Keyboard.current.semicolonKey.wasPressedThisFrame)
-            {
-                if (isGUIEnabled)
-                {
-                    isCompetitiveTeamConfiguring = !isCompetitiveTeamConfiguring;
-                }
-            }
-            if (Keyboard.current.commaKey.wasPressedThisFrame)
-            {
-                if (isGUIEnabled)
-                {
-                   isChangingTeam1Score = !isChangingTeam1Score;
-                }
-            }
-            if(Keyboard.current.endKey.wasPressedThisFrame)
-            {
-                ShowCameraPositon = !ShowCameraPositon;
-                VisibleCameraObject.GetComponent<Renderer>().enabled = ShowCameraPositon;
-            }
-
-            // Competitive Adding Score
-            if(isCompetitiveTeam)
-            {
-                if (isChangingTeam1Score)
-                {
-                    if (Keyboard.current.equalsKey.wasPressedThisFrame) Team1Score = Team1Score + 1;
-                    if (Keyboard.current.minusKey.wasPressedThisFrame) Team1Score = Team1Score - 1;
-                }
-                else
-                {
-                    if (Keyboard.current.equalsKey.wasPressedThisFrame) Team2Score = Team2Score + 1;
-                    if (Keyboard.current.minusKey.wasPressedThisFrame) Team2Score = Team2Score - 1;
-                }
-            }
+            OnFrameRefresh();
         }
-
         public void OnGUI()
         {
+            Color neonPurple = new Color(0.6f, 0.2f, 1f, 1f);
+            Color neonBrightPurple = new Color(0.8f, 0.4f, 1f, 1f);
+            Color neonGreen = new Color(0.2f, 1f, 0.6f, 1f);
+            Color darkBackground = new Color(0.1f, 0.1f, 0.1f, 0.8f);
+
             GUIStyle buttonStyle = new GUIStyle(GUI.skin.button)
             {
                 fontSize = 20,
-                normal = { textColor = Color.grey, background = buttonTexture },
-                active = { textColor = Color.white, background = buttonTexture },
-                hover = { textColor = Color.white, background = buttonTexture },
+                normal = { textColor = neonPurple, background = buttonTexture },
+                active = { textColor = neonGreen, background = buttonTexture },
+                hover = { textColor = neonBrightPurple, background = buttonTexture },
+                fontStyle = FontStyle.Bold,
                 alignment = TextAnchor.MiddleCenter,
                 fixedWidth = 80,
                 fixedHeight = 40
@@ -308,9 +100,10 @@ namespace GorillaCamera
             GUIStyle buttonStyleNext = new GUIStyle(GUI.skin.button)
             {
                 fontSize = 4,
-                normal = { textColor = Color.grey, background = buttonTexture },
-                active = { textColor = Color.white, background = buttonTexture },
-                hover = { textColor = Color.white, background = buttonTexture },
+                normal = { textColor = neonPurple, background = buttonTexture },
+                active = { textColor = neonGreen, background = buttonTexture },
+                hover = { textColor = neonBrightPurple, background = buttonTexture },
+                fontStyle = FontStyle.Bold,
                 alignment = TextAnchor.MiddleCenter,
                 fixedWidth = 80,
                 fixedHeight = 20
@@ -319,38 +112,53 @@ namespace GorillaCamera
             GUIStyle labelStyle = new GUIStyle(GUI.skin.label)
             {
                 fontSize = 12,
-                normal = { textColor = Color.white },
-                alignment = TextAnchor.MiddleCenter
+                normal = { textColor = neonPurple },
+                alignment = TextAnchor.MiddleCenter,
+                fontStyle = FontStyle.Bold
             };
             GUIStyle labelStylesmall = new GUIStyle(GUI.skin.label)
             {
                 fontSize = 9,
-                normal = { textColor = Color.white },
+                normal = { textColor = neonBrightPurple },
+                fontStyle = FontStyle.Bold,
                 alignment = TextAnchor.MiddleCenter
             };
 
             GUIStyle headerStyle = new GUIStyle(GUI.skin.label)
             {
                 fontSize = 16,
-                normal = { textColor = Color.white },
+                normal = { textColor = neonPurple },
+                fontStyle = FontStyle.Bold,
                 alignment = TextAnchor.MiddleCenter
             };
 
             GUIStyle TeamScoreStyle = new GUIStyle(GUI.skin.label)
             {
                 fontSize = 30,
-                normal = { textColor = Color.grey },
+                normal = { textColor = darkBackground },
+                fontStyle = FontStyle.Bold,
                 alignment = TextAnchor.MiddleCenter
             };
             GUIStyle FollowStyle = new GUIStyle(GUI.skin.label)
             {
                 fontSize = 30,
-                normal = { textColor = Color.grey },
+                normal = { textColor = darkBackground },
+                fontStyle = FontStyle.Bold,
                 alignment = TextAnchor.MiddleRight
             };
             GUIStyle BoxStyle = new GUIStyle(GUI.skin.box)
             {
                 normal = { background = boxTexture }
+            };
+            GUIStyle SliderStyle = new GUIStyle(GUI.skin.horizontalSlider)
+            {
+                fixedHeight = 10,
+                normal = { background = sliderTexture },
+            };
+            GUIStyle SliderStyleThumb = new GUIStyle(GUI.skin.horizontalSlider)
+            {
+                fixedHeight = 10,
+                normal = { background = sliderTexturethumb },
             };
 
             float screenWidth = Screen.width;
@@ -399,19 +207,23 @@ namespace GorillaCamera
                 }
 
                 GUI.Label(new Rect(panelRect.x + 10, panelRect.y + panelHeight - 150, panelWidth - 20, 20), "Rotation Time", labelStylesmall);
-                RotationTime = GUI.HorizontalSlider(new Rect(panelRect.x + 10, panelRect.y + panelHeight - 130, panelWidth - 20, 20), RotationTime, 0f, 1f);
+                RotationTime = GUI.HorizontalSlider(new Rect(panelRect.x + 10, panelRect.y + panelHeight - 130, panelWidth - 20, 20), RotationTime, 0f, 1f, SliderStyle, SliderStyleThumb);
 
                 GUI.Label(new Rect(panelRect.x + 10, panelRect.y + panelHeight - 120, panelWidth - 20, 20), "FOV", labelStyle);
-                ActualCamera.fieldOfView = GUI.HorizontalSlider(new Rect(panelRect.x + 10, panelRect.y + panelHeight - 100, panelWidth - 20, 20), ActualCamera.fieldOfView, 1f, 180f);
+                ActualCamera.fieldOfView = GUI.HorizontalSlider(new Rect(panelRect.x + 10, panelRect.y + panelHeight - 100, panelWidth - 20, 20), ActualCamera.fieldOfView, 1f, 180f, SliderStyle, SliderStyleThumb);
 
                 GUI.Label(new Rect(panelRect.x + 10, panelRect.y + panelHeight - 80, panelWidth - 20, 20), "Smooth Amount", labelStyle);
-                SmoothAmount = GUI.HorizontalSlider(new Rect(panelRect.x + 10, panelRect.y + panelHeight - 60, panelWidth - 20, 20), SmoothAmount, 0f, 1f);
+                SmoothAmount = GUI.HorizontalSlider(new Rect(panelRect.x + 10, panelRect.y + panelHeight - 60, panelWidth - 20, 20), SmoothAmount, 0f, 1f, SliderStyle, SliderStyleThumb);
 
                 if (CurrentCameraMode == CameraModes.RandomView || CurrentCameraMode == CameraModes.RandomSurvivorView || CurrentCameraMode == CameraModes.RandomTaggedView)
                 {
                     GUI.Label(new Rect(panelRect.x + 10, panelRect.y + panelHeight - 30, panelWidth - 20, 20), "Rig Time Delay", labelStyle);
-                    RandomRigTimeChangeDelay = GUI.HorizontalSlider(new Rect(panelRect.x + 10, panelRect.y + panelHeight - 10, panelWidth - 20, 20), RandomRigTimeChangeDelay, 1f, 20f);
+                    RandomRigTimeChangeDelay = GUI.HorizontalSlider(new Rect(panelRect.x + 10, panelRect.y + panelHeight - 10, panelWidth - 20, 20), RandomRigTimeChangeDelay, 1f, 20f, SliderStyle, SliderStyleThumb);
                     if (GUI.Button(new Rect(panelRect.x + 10, panelRect.y + panelHeight - 30, panelWidth - 10, 20), $"Show Following Player Name {ShowFollowingPlayerName}", buttonStyleNext))
+                    {
+                        ShowFollowingPlayerName = !ShowFollowingPlayerName;
+                    }
+                    if (GUI.Button(new Rect(panelRect.x + 120, panelRect.y + panelHeight - 30, panelWidth - 10, 20), $"Capture Self {ShowFollowingPlayerName}", buttonStyleNext))
                     {
                         ShowFollowingPlayerName = !ShowFollowingPlayerName;
                     }
@@ -442,7 +254,265 @@ namespace GorillaCamera
                 }
             }
         }
+        #endregion
 
+        #region Setting Up
+
+        public void SetupCamera()
+        {
+            ShoulderCamera = GorillaTagger.Instance.thirdPersonCamera.transform.Find("Shoulder Camera").gameObject;
+            ActualCamera = GorillaTagger.Instance.thirdPersonCamera.transform.Find("Shoulder Camera").gameObject.GetComponent<Camera>();
+            CameraBrain = GorillaTagger.Instance.thirdPersonCamera.GetComponentInChildren<CinemachineBrain>();
+            LocalPlayerObject = GorillaLocomotion.Player.Instance.gameObject;
+            LocalPlayerCameraObject = GorillaTagger.Instance.mainCamera.gameObject;
+        }
+
+        public void SetupTextures()
+        {
+            boxTexture = new Texture2D(1, 1);
+            boxTexture.SetPixel(0, 0, new Color(0.1f, 0.1f, 0.1f, 0.9f));
+            boxTexture.Apply();
+
+            buttonTexture = new Texture2D(1, 1);
+            buttonTexture.SetPixel(0, 0, new Color(0.1f, 0.1f, 0.1f, 0.9f));
+            buttonTexture.Apply();
+
+            headerTexture = new Texture2D(1, 1);
+            headerTexture.SetPixel(0, 0, new Color(0.1f, 0.1f, 0.1f, 0.9f));
+            headerTexture.Apply();
+
+            sliderTexture = new Texture2D(1, 1);
+            sliderTexture.SetPixel(0, 0, new Color(0.1f, 0.1f, 0.1f, 0.9f));
+            sliderTexture.Apply();
+
+            sliderTexturethumb = new Texture2D(1, 1);
+            sliderTexturethumb.SetPixel(0, 0, Color.white);
+            sliderTexturethumb.Apply();
+        }
+
+        public void SetupVCO()
+        {
+            VisibleCameraObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            VisibleCameraObject.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+            VisibleCameraObject.GetComponent<Renderer>().material = new Material(Shader.Find("GUI/Text Shader"));
+            VisibleCameraObject.GetComponent<Renderer>().material.color = Color.black;
+            VisibleCameraObject.GetComponent<Renderer>().enabled = false;
+            VisibleCameraObject.transform.SetParent(ShoulderCamera.transform, false); // mja ha ha
+            VisibleCameraObject.transform.localPosition = new Vector3(0, 0, -0.1f);
+            GameObject.Destroy(VisibleCameraObject.GetComponent<BoxCollider>());
+        }
+        #endregion
+
+        #region Main Camera Functions
+        public void OnFrameRefresh()
+        {
+            Vector3 Velocity = GorillaTagger.Instance.rigidbody.velocity;
+            if (CurrentCameraMode == CameraModes.ThirdPerson)
+            {
+                Vector3 offset = new Vector3(0.5f, 0.7f, -0.8f);
+                Vector3 targetPosition = LocalPlayerCameraObject.transform.position + LocalPlayerCameraObject.transform.TransformDirection(offset);
+                CameraBrain.enabled = false;
+                ShoulderCamera.transform.position = Vector3.SmoothDamp(ShoulderCamera.transform.position, targetPosition, ref Velocity, SmoothAmount);
+                Quaternion targetRotation = Quaternion.LookRotation(LocalPlayerCameraObject.transform.position - ShoulderCamera.transform.position);
+                ShoulderCamera.transform.rotation = Quaternion.LerpUnclamped(ShoulderCamera.transform.rotation, targetRotation, RotationTime);
+            }
+            if (CurrentCameraMode == CameraModes.FirstPerson)
+            {
+                Vector3 offset = new Vector3(0f, 0f, 0f);
+                Vector3 targetPosition = LocalPlayerCameraObject.transform.position + LocalPlayerCameraObject.transform.TransformDirection(offset);
+                CameraBrain.enabled = false;
+                if (TweenFirstPerson)
+                {
+                    ShoulderCamera.transform.position = Vector3.SmoothDamp(ShoulderCamera.transform.position, targetPosition, ref Velocity, SmoothAmount - 0.06f);
+                }
+                else
+                {
+                    ShoulderCamera.transform.position = LocalPlayerCameraObject.transform.position;
+                }
+                Quaternion targetRotation = LocalPlayerCameraObject.transform.rotation;
+                ShoulderCamera.transform.rotation = Quaternion.LerpUnclamped(ShoulderCamera.transform.rotation, targetRotation, RotationTime);
+            }
+            if (CurrentCameraMode == CameraModes.SecondPerson)
+            {
+                Vector3 offset = new Vector3(0f, 0f, 2f);
+                Vector3 targetPosition = LocalPlayerCameraObject.transform.position + LocalPlayerCameraObject.transform.TransformDirection(offset);
+                CameraBrain.enabled = false;
+                ShoulderCamera.transform.position = Vector3.SmoothDamp(ShoulderCamera.transform.position, targetPosition, ref Velocity, SmoothAmount);
+                Quaternion targetRotation = Quaternion.LookRotation(LocalPlayerCameraObject.transform.position - ShoulderCamera.transform.position);
+                ShoulderCamera.transform.rotation = Quaternion.LerpUnclamped(ShoulderCamera.transform.rotation, targetRotation, RotationTime);
+            }
+            if (CurrentCameraMode == CameraModes.Following)
+            {
+                Vector3 offset = new Vector3(0f, 0f, 0f);
+                Vector3 targetPosition = LocalPlayerCameraObject.transform.position + LocalPlayerCameraObject.transform.TransformDirection(offset);
+                CameraBrain.enabled = false;
+                if (!IsThisNearThat(ShoulderCamera.transform.position, LocalPlayerObject.transform.position, 4f))
+                {
+                    ShoulderCamera.transform.position = Vector3.SmoothDamp(ShoulderCamera.transform.position, targetPosition, ref Velocity, SmoothAmount + 0.2f);
+                }
+                Quaternion targetRotation = Quaternion.LookRotation(LocalPlayerCameraObject.transform.position - ShoulderCamera.transform.position);
+                ShoulderCamera.transform.rotation = Quaternion.LerpUnclamped(ShoulderCamera.transform.rotation, targetRotation, RotationTime);
+            }
+            if (PhotonNetwork.InRoom && PhotonNetwork.CurrentRoom.PlayerCount > 1)
+            {
+                if (CurrentCameraMode == CameraModes.RandomView)
+                {
+                    if (RandomRigTime < Time.time)
+                    {
+                        FollowingRig = GetRandomRig(true);
+                        RandomRigTime = Time.time + RandomRigTimeChangeDelay;
+                    }
+                    if (FollowingRig != null)
+                    {
+                        Vector3 offset = new Vector3(0.5f, 0.7f, -0.8f);
+                        Vector3 targetPosition = FollowingRig.headMesh.transform.position + FollowingRig.headMesh.transform.TransformDirection(offset);
+                        CameraBrain.enabled = false;
+                        ShoulderCamera.transform.position = Vector3.SmoothDamp(ShoulderCamera.transform.position, targetPosition, ref Velocity, SmoothAmount);
+                        Quaternion targetRotation = Quaternion.LookRotation(FollowingRig.headMesh.transform.position - ShoulderCamera.transform.position);
+                        ShoulderCamera.transform.rotation = Quaternion.LerpUnclamped(ShoulderCamera.transform.rotation, targetRotation, RotationTime);
+                    }
+                    else
+                    {
+                        FollowingRig = GetRandomRig(true);
+                        RandomRigTime = Time.time + RandomRigTimeChangeDelay;
+                    }
+                }
+            }
+            else
+            {
+                if (CurrentCameraMode == CameraModes.RandomView)
+                {
+                    CurrentCameraMode = CameraModes.ThirdPerson;
+                }
+            }
+            if (PhotonNetwork.InRoom && isThisGameMode("INFECTION") && PhotonNetwork.CurrentRoom.PlayerCount > 1)
+            {
+                if (CurrentCameraMode == CameraModes.RandomTaggedView)
+                {
+                    if (RandomRigTime < Time.time)
+                    {
+                        FollowingRig = GetRandomRig(CaptureSelf, true, false);
+                        RandomRigTime = Time.time + RandomRigTimeChangeDelay;
+                    }
+                    if (FollowingRig != null)
+                    {
+                        Vector3 offset = new Vector3(0.5f, 0.7f, -0.8f);
+                        Vector3 targetPosition = FollowingRig.headMesh.transform.position + FollowingRig.headMesh.transform.TransformDirection(offset);
+                        CameraBrain.enabled = false;
+                        ShoulderCamera.transform.position = Vector3.SmoothDamp(ShoulderCamera.transform.position, targetPosition, ref Velocity, SmoothAmount);
+                        Quaternion targetRotation = Quaternion.LookRotation(FollowingRig.headMesh.transform.position - ShoulderCamera.transform.position);
+                        ShoulderCamera.transform.rotation = Quaternion.LerpUnclamped(ShoulderCamera.transform.rotation, targetRotation, RotationTime);
+                    }
+                    else
+                    {
+                        FollowingRig = GetRandomRig(CaptureSelf, true, false);
+                        RandomRigTime = Time.time + RandomRigTimeChangeDelay;
+                    }
+                }
+                if (CurrentCameraMode == CameraModes.RandomSurvivorView)
+                {
+                    if (RandomRigTime < Time.time)
+                    {
+                        FollowingRig = GetRandomRig(CaptureSelf, false, true);
+                        RandomRigTime = Time.time + RandomRigTimeChangeDelay;
+                    }
+                    if (FollowingRig != null)
+                    {
+                        Vector3 offset = new Vector3(0.5f, 0.7f, -0.8f);
+                        Vector3 targetPosition = FollowingRig.headMesh.transform.position + FollowingRig.headMesh.transform.TransformDirection(offset);
+                        CameraBrain.enabled = false;
+                        ShoulderCamera.transform.position = Vector3.SmoothDamp(ShoulderCamera.transform.position, targetPosition, ref Velocity, SmoothAmount);
+                        Quaternion targetRotation = Quaternion.LookRotation(FollowingRig.headMesh.transform.position - ShoulderCamera.transform.position);
+                        ShoulderCamera.transform.rotation = Quaternion.LerpUnclamped(ShoulderCamera.transform.rotation, targetRotation, RotationTime);
+                    }
+                    else
+                    {
+                        FollowingRig = GetRandomRig(CaptureSelf, false, true);
+                        RandomRigTime = Time.time + RandomRigTimeChangeDelay;
+                    }
+                }
+            }
+            else
+            {
+                if (CurrentCameraMode == CameraModes.RandomTaggedView || CurrentCameraMode == CameraModes.RandomSurvivorView)
+                { CurrentCameraMode = CameraModes.ThirdPerson; }
+            }
+            if (CurrentCameraMode == CameraModes.LeftHand)
+            {
+                Vector3 offset = new Vector3(0f, 0f, 0f);
+                Vector3 targetPosition = GorillaTagger.Instance.offlineVRRig.leftHandTransform.position + GorillaTagger.Instance.offlineVRRig.leftHandTransform.TransformDirection(offset);
+                CameraBrain.enabled = false;
+                ShoulderCamera.transform.position = Vector3.SmoothDamp(ShoulderCamera.transform.position, targetPosition, ref Velocity, SmoothAmount - 0.06f);
+                Quaternion targetRotation = Quaternion.LookRotation(LocalPlayerCameraObject.transform.position - ShoulderCamera.transform.position);
+                ShoulderCamera.transform.rotation = Quaternion.LerpUnclamped(ShoulderCamera.transform.rotation, targetRotation, RotationTime);
+            }
+            if (CurrentCameraMode == CameraModes.RightHand)
+            {
+                Vector3 offset = new Vector3(0f, 0f, 0f);
+                Vector3 targetPosition = GorillaTagger.Instance.offlineVRRig.rightHandTransform.position + GorillaTagger.Instance.offlineVRRig.rightHandTransform.TransformDirection(offset);
+                CameraBrain.enabled = false;
+                ShoulderCamera.transform.position = Vector3.SmoothDamp(ShoulderCamera.transform.position, targetPosition, ref Velocity, SmoothAmount - 0.06f);
+                Quaternion targetRotation = Quaternion.LookRotation(LocalPlayerCameraObject.transform.position - ShoulderCamera.transform.position);
+                ShoulderCamera.transform.rotation = Quaternion.LerpUnclamped(ShoulderCamera.transform.rotation, targetRotation, RotationTime);
+            }
+            if (CurrentCameraMode == CameraModes.InMiddle)
+            {
+                Vector3 offset = new Vector3(0f, 0f, 0f);
+                Vector3 targetPosition = (GorillaTagger.Instance.offlineVRRig.rightHandTransform.position + GorillaTagger.Instance.offlineVRRig.leftHandTransform.position) / 2 + offset;
+                CameraBrain.enabled = false;
+                ShoulderCamera.transform.position = Vector3.SmoothDamp(ShoulderCamera.transform.position, targetPosition, ref Velocity, SmoothAmount - 0.06f);
+                Quaternion targetRotation = Quaternion.LookRotation(LocalPlayerCameraObject.transform.position - ShoulderCamera.transform.position);
+                ShoulderCamera.transform.rotation = Quaternion.LerpUnclamped(ShoulderCamera.transform.rotation, targetRotation, RotationTime);
+            }
+            if (Keyboard.current.rightBracketKey.wasPressedThisFrame)
+            {
+                isGUIEnabled = !isGUIEnabled;
+            }
+            if (Keyboard.current.leftBracketKey.wasPressedThisFrame)
+            {
+                if (isGUIEnabled)
+                {
+                    isCompetitiveTeam = !isCompetitiveTeam;
+                }
+            }
+            if (Keyboard.current.semicolonKey.wasPressedThisFrame)
+            {
+                if (isGUIEnabled)
+                {
+                    isCompetitiveTeamConfiguring = !isCompetitiveTeamConfiguring;
+                }
+            }
+            if (Keyboard.current.commaKey.wasPressedThisFrame)
+            {
+                if (isCompetitiveTeam)
+                {
+                    isChangingTeam1Score = !isChangingTeam1Score;
+                }
+            }
+            if (Keyboard.current.endKey.wasPressedThisFrame)
+            {
+                ShowCameraPositon = !ShowCameraPositon;
+                VisibleCameraObject.GetComponent<Renderer>().enabled = ShowCameraPositon;
+            }
+
+            // Competitive Adding Score
+            if (isCompetitiveTeam)
+            {
+                if (isChangingTeam1Score)
+                {
+                    if (Keyboard.current.equalsKey.wasPressedThisFrame) Team1Score = Team1Score + 1;
+                    if (Keyboard.current.minusKey.wasPressedThisFrame) Team1Score = Team1Score - 1;
+                }
+                else
+                {
+                    if (Keyboard.current.equalsKey.wasPressedThisFrame) Team2Score = Team2Score + 1;
+                    if (Keyboard.current.minusKey.wasPressedThisFrame) Team2Score = Team2Score - 1;
+                }
+            }
+        }
+        #endregion
+
+        #region Extra Functions
         public string GetCurrentChangingTeam()
         {
             return isChangingTeam1Score ? Team1Name : Team2Name;
@@ -454,12 +524,12 @@ namespace GorillaCamera
             int currentIndex = Array.IndexOf(modes, CurrentCameraMode);
 
             int newIndex = (currentIndex + direction + modes.Length) % modes.Length;
-            if(modes[newIndex] == CameraModes.RandomView || modes[newIndex] == CameraModes.RandomSurvivorView || modes[newIndex] == CameraModes.RandomTaggedView) { FollowingRig = null; RandomRigTime = 0; }
-            if(modes[newIndex] == CameraModes.RandomTaggedView || modes[newIndex] == CameraModes.RandomSurvivorView)
+            if (modes[newIndex] == CameraModes.RandomView || modes[newIndex] == CameraModes.RandomSurvivorView || modes[newIndex] == CameraModes.RandomTaggedView) { FollowingRig = null; RandomRigTime = 0; }
+            if (modes[newIndex] == CameraModes.RandomTaggedView || modes[newIndex] == CameraModes.RandomSurvivorView)
             {
-                if(!isThisGameMode("INFECTION"))
+                if (!isThisGameMode("INFECTION"))
                 {
-                    modes[newIndex] = direction == 1 ? CameraModes.LeftHand : CameraModes.Following;
+                    modes[newIndex] = direction == 1 ? CameraModes.LeftHand : !PhotonNetwork.InRoom ? CameraModes.Following : CameraModes.RandomView;
                 }
             }
             if (modes[newIndex] == CameraModes.RandomView)
@@ -470,7 +540,17 @@ namespace GorillaCamera
                 }
             }
             CurrentCameraMode = modes[newIndex];
+            OnCameraModeSwitched(modes[newIndex]);
         }
+
+        public void OnCameraModeSwitched(CameraModes mode)
+        {
+            if (mode == CameraModes.Disabled)
+            {
+                CameraBrain.enabled = true;
+            }
+        }
+        #endregion
     }
     public class PluginInfo
     {

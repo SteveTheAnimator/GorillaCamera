@@ -1,6 +1,6 @@
 ﻿using BepInEx;
 using Cinemachine;
-using GorillaCamera.Scripts.Utils;
+using GorillaTag;
 using Photon.Pun;
 using System;
 using UnityEngine;
@@ -15,9 +15,9 @@ namespace GorillaCamera.Scripts.Utils
             var players = includeMyRig ? PhotonNetwork.PlayerList : PhotonNetwork.PlayerListOthers;
             var randomPlayer = players[UnityEngine.Random.Range(0, players.Length)];
             VRRig rig = GorillaGameManager.instance.FindPlayerVRRig(randomPlayer);
-            if(HasToBeTagged)
+            if (HasToBeTagged)
             {
-                if (isThisPlayerTagged(rig))
+                if (isThisPlayerTagged(rig.OwningNetPlayer))
                 {
                     return rig;
                 }
@@ -28,13 +28,20 @@ namespace GorillaCamera.Scripts.Utils
             }
             else if (HasToBeSurvivor)
             {
-                if (!isThisPlayerTagged(rig))
+                if (!isThisPlayerTagged(rig.OwningNetPlayer))
                 {
                     return rig;
                 }
                 else
                 {
-                    return GetRandomRig(includeMyRig, HasToBeTagged, HasToBeSurvivor);
+                    if (!IsEveryoneTagged())
+                    {
+                        return GetRandomRig(includeMyRig, HasToBeTagged, HasToBeSurvivor);
+                    }
+                    else
+                    {
+                        return rig; /* Prevent Game Crashes */
+                    }
                 }
             }
             else
@@ -42,15 +49,15 @@ namespace GorillaCamera.Scripts.Utils
                 return rig;
             }
         }
-        public static bool isThisPlayerTagged(VRRig player)
+        public static bool isThisPlayerTagged(NetPlayer player)
         {
-            if (player.mainSkin.material.name.Contains("fected"))
+            if (GetGorillaTagManager().currentInfected.Contains(player))
             {
                 return true;
             }
             else
             {
-                if (player.mainSkin.material.name.Contains("It"))
+                if (GetGorillaTagManager().currentIt == player)
                 {
                     return true;
                 }
@@ -60,19 +67,19 @@ namespace GorillaCamera.Scripts.Utils
                 }
             }
         }
-        public static VRRig GetRigFromName(string name)
+        public static bool IsEveryoneTagged()
         {
-            var players = PhotonNetwork.PlayerList;
-            var randomPlayer = players[UnityEngine.Random.Range(0, players.Length)];
-            VRRig rig = GorillaGameManager.instance.FindPlayerVRRig(randomPlayer);
-            if(rig.playerName == name) 
+            bool notpossible = false;
+            foreach(VRRig rig in GorillaParent.instance.vrrigs)
             {
-                return rig;
+                if (!isThisPlayerTagged(rig.OwningNetPlayer)) { notpossible = true; break; }
             }
-            else
-            {
-                return GetRigFromName(name);
-            }
+            return !notpossible;
+        }
+
+        public static GorillaTagManager GetGorillaTagManager()
+        {
+            return GameObject.Find("GT Systems/GameModeSystem/Gorilla Tag Manager").GetComponent<GorillaTagManager>();
         }
     }
 }
