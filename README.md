@@ -29,11 +29,10 @@
             Random View - Follows a random player for a specified time
             Random Tagged View - Follows a random tagged player for a specified time
             Random Survivor View - Follows a random surviving player for a specified time
-	    Left Hand - Puts the camera in the left hand and makes the camera look at you.
-     	    Right Hand - Same as left, but in the right hand.
-	    In Middle - Puts the camera in the middle of your hands
-            Disabled - Disables the camera.
-
+	    	Left Hand - Puts the camera in your left hand, also makes the camera look at you.
+     	Right Hand - Same as left hand, but in your right hand
+     	In Middle - Puts the camera in the middle of your hands
+     	Disabled - Disables the camera
 
 
 ## Competitive
