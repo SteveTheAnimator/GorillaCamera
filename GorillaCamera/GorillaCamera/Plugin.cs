@@ -50,7 +50,6 @@ namespace GorillaCamera
         public float RotationTime = 0.1f;
         public bool ShowCameraPositon = false;
         public bool ShowFollowingPlayerName = true;
-        public bool CaptureSelf = true;
 
         // Competitive
         public bool isCompetitiveTeam = false;
@@ -224,10 +223,6 @@ namespace GorillaCamera
                     {
                         ShowFollowingPlayerName = !ShowFollowingPlayerName;
                     }
-                    if (GUI.Button(new Rect(panelRect.x + 210, panelRect.y + panelHeight - 30, panelWidth - 10, 20), $"Capture Self {CaptureSelf}", buttonStyleNext))
-                    {
-                        CaptureSelf = !CaptureSelf;
-                    }
                 }
 
 
@@ -392,7 +387,7 @@ namespace GorillaCamera
                 {
                     if (RandomRigTime < Time.time)
                     {
-                        FollowingRig = GetRandomRig(CaptureSelf, true, false);
+                        FollowingRig = GetRandomRig(true, true, false);
                         RandomRigTime = Time.time + RandomRigTimeChangeDelay;
                     }
                     if (FollowingRig != null)
@@ -406,7 +401,7 @@ namespace GorillaCamera
                     }
                     else
                     {
-                        FollowingRig = GetRandomRig(CaptureSelf, true, false);
+                        FollowingRig = GetRandomRig(true, true, false);
                         RandomRigTime = Time.time + RandomRigTimeChangeDelay;
                     }
                 }
@@ -414,7 +409,7 @@ namespace GorillaCamera
                 {
                     if (RandomRigTime < Time.time)
                     {
-                        FollowingRig = GetRandomRig(CaptureSelf, false, true);
+                        FollowingRig = GetRandomRig(true, false, true);
                         RandomRigTime = Time.time + RandomRigTimeChangeDelay;
                     }
                     if (FollowingRig != null)
@@ -428,7 +423,7 @@ namespace GorillaCamera
                     }
                     else
                     {
-                        FollowingRig = GetRandomRig(CaptureSelf, false, true);
+                        FollowingRig = GetRandomRig(true, false, true);
                         RandomRigTime = Time.time + RandomRigTimeChangeDelay;
                     }
                 }
