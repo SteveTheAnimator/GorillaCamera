@@ -3,21 +3,14 @@
   <a href="#"><img src="https://github.com/SteveTheAnimator/GorillaCamera/blob/main/Marketing/gorillacam.png" width="500"></a>
 </p>
 
-
 <p align="center">
-<a href="https://github.com/SteveTheAnimator/GorillaCamera/releases/latest">
-  <img src="https://img.shields.io/github/v/release/SteveTheAnimator/GorillaCamera?label=latest&style=for-the-badge">
-</a>
-<a href="https://github.com/SteveTheAnimator/GorillaCamera/releases">
-  <img src="https://img.shields.io/github/downloads/SteveTheAnimator/GorillaCamera/latest/GorillaCamera.dll?style=for-the-badge">
-</a>
-<a href="https://github.com/SteveTheAnimator/GorillaCamera/graphs/contributors">
-  <img src="https://img.shields.io/github/contributors/SteveTheAnimator/GorillaCamera?style=for-the-badge">
-</a>
-
+  <a href="https://github.com/SteveTheAnimator/GorillaCamera"><img alt="GitHub repo stars" src="https://img.shields.io/github/stars/SteveTheAnimator/GorillaCamera?style=for-the-badge"></a>
+  <a href="https://github.com/SteveTheAnimator/GorillaCamera"><img alt="GitHub forks" src="https://img.shields.io/github/forks/SteveTheAnimator/GorillaCamera?style=for-the-badge"></a>
+  <a href="https://github.com/SteveTheAnimator/GorillaCamera"><img alt="GitHub issues" src="https://img.shields.io/github/issues/SteveTheAnimator/GorillaCamera?style=for-the-badge"></a>
+  <a href="https://github.com/SteveTheAnimator/GorillaCamera"><img alt="GitHub latest" src="https://img.shields.io/github/v/release/SteveTheAnimator/GorillaCamera?style=for-the-badge"></a>
+  <a href="https://github.com/SteveTheAnimator/GorillaCamera"><img alt="GitHub license" src="https://img.shields.io/github/license/SteveTheAnimator/GorillaCamera?style=for-the-badge"></a>
 </p>
 
- 
 ---
 
 
