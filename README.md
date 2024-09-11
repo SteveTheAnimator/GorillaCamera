@@ -5,15 +5,16 @@
 
 
 <p align="center">
-	<a href="https://github.com/SteveTheAnimator/GorillaCamera/releases/latest">
-		<img src="https://img.shields.io/github/v/release/SteveTheAnimator/GorillaCamera?label=latest&style=for-the-badge" alt="Latest Release">
-	</a>
-	<a href="https://github.com/SteveTheAnimator/GorillaCamera/releases">
-		<img src="https://img.shields.io/github/downloads/SteveTheAnimator/GorillaCamera/latest/GorillaCamera.dll?style=for-the-badge" alt="Downloads">
-	</a>
-	<a href="https://github.com/SteveTheAnimator/GorillaCamera/graphs/contributors">
-		<img src="https://img.shields.io/github/contributors/SteveTheAnimator/GorillaCamera?style=for-the-badge" alt="Contributors">
-	</a>
+<a href="https://github.com/SteveTheAnimator/GorillaCamera/releases/latest">
+  <img src="https://img.shields.io/github/v/release/SteveTheAnimator/GorillaCamera?label=latest&style=for-the-badge">
+</a>
+<a href="https://github.com/SteveTheAnimator/GorillaCamera/releases">
+  <img src="https://img.shields.io/github/downloads/SteveTheAnimator/GorillaCamera/latest/GorillaCamera.dll?style=for-the-badge">
+</a>
+<a href="https://github.com/SteveTheAnimator/GorillaCamera/graphs/contributors">
+  <img src="https://img.shields.io/github/contributors/SteveTheAnimator/GorillaCamera?style=for-the-badge">
+</a>
+
 </p>
 
  
