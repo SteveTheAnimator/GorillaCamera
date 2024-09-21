@@ -15,7 +15,6 @@ using UnityEngine.UIElements;
 using GorillaCamera.Scripts.Important;
 using GorillaNetworking;
 using GorillaCamera.Scripts.Utils;
-
 namespace GorillaCamera
 {
     [BepInDependency("org.legoandmars.gorillatag.utilla", "1.5.0")]
@@ -34,6 +33,8 @@ namespace GorillaCamera
         public GameObject LocalPlayerCameraObject;
         public VRRig FollowingRig;
         public GameObject VisibleCameraObject = null;
+
+        // Textures
         private Texture2D boxTexture;
         private Texture2D buttonTexture;
         private Texture2D sliderTexture;
@@ -49,6 +50,7 @@ namespace GorillaCamera
         public bool TweenFirstPerson = true;
         public float RotationTime = 0.1f;
         public bool ShowCameraPositon = false;
+        public bool OverrideCameraPositon = false;
         public bool ShowFollowingPlayerName = true;
 
         // Competitive
@@ -245,7 +247,7 @@ namespace GorillaCamera
                 {
                     if (ShowFollowingPlayerName)
                     {
-                        GUI.Label(new Rect(30, 120, panelWidth + 200, 90), "Currently Spectating: " + FollowingRig.playerText.text, FollowStyle);
+                        GUI.Label(new Rect(30, 120, panelWidth + 200, 90), "Currently Spectating: " + FollowingRig.playerText1.text, FollowStyle);
                     }
                 }
             }
@@ -488,6 +490,14 @@ namespace GorillaCamera
             if (Keyboard.current.endKey.wasPressedThisFrame)
             {
                 ShowCameraPositon = !ShowCameraPositon;
+                VisibleCameraObject.GetComponent<Renderer>().enabled = ShowCameraPositon;
+            }
+            if(OverrideCameraPositon)
+            {
+                VisibleCameraObject.GetComponent<Renderer>().enabled = true;
+            }
+            else
+            {
                 VisibleCameraObject.GetComponent<Renderer>().enabled = ShowCameraPositon;
             }
 
