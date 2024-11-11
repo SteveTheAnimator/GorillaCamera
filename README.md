@@ -8,7 +8,7 @@
   <a href="https://github.com/SteveTheAnimator/GorillaCamera"><img alt="GitHub forks" src="https://img.shields.io/github/forks/SteveTheAnimator/GorillaCamera?style=for-the-badge"></a>
   <a href="https://github.com/SteveTheAnimator/GorillaCamera"><img alt="GitHub issues" src="https://img.shields.io/github/issues/SteveTheAnimator/GorillaCamera?style=for-the-badge"></a>
   <a href="https://github.com/SteveTheAnimator/GorillaCamera"><img alt="GitHub latest" src="https://img.shields.io/github/v/release/SteveTheAnimator/GorillaCamera?style=for-the-badge"></a>
-  <a href="https://github.com/SteveTheAnimator/GorillaCamera"><img alt="GitHub license" src="https://img.shields.io/github/license/SteveTheAnimator/GorillaCamera?style=for-the-badge"></a>
+  <a href="https://github.com/SteveTheAnimator/GorillaCamera"><img alt="GitHub license" src="https://img.shields.io/badge/LICSENSE-Attribution--NoDerivatives_4_International_(CC_BY--ND%204)-AttributionNoDerivatives_40_International?style=for-the-badge"></a>
   <a href="https://github.com/SteveTheAnimator/GorillaCamera"><img alt="Download count" src="https://img.shields.io/github/downloads/SteveTheAnimator/GorillaCamera/total?style=for-the-badge">	
 	
 </p>
